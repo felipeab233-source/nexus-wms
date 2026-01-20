@@ -1,0 +1,41 @@
+/*configuração geral*/
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    transition: 0.5s; /* Suaviliza a troca de cor */
+}
+.container {
+    text-align: center;
+    padding: 20px;
+    border: 2xp solid #333;
+    border-radius: 15px;
+}
+
+button {
+    padding: 10px 20 px;
+    cursor: pointer;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: #5885b4;
+    color: white;
+}
+
+/*estilo para modo escuro (ativado pelo JS)*/
+body.dark-mode {
+    background-color:#1a1a1a;
+    color: white;
+}
+
+body.dark-mode .container {
+    border-color: white;
+
+}
+
+.positivo { color: green !important; }
+.negativo { color: red !important; }
+.neutro { color: black; }

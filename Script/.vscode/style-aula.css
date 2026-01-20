@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+img {
+    width: 100px;
+    color: pink;
+}
+
+div {
+    background-color: #175a2c;
+    width: 250px;
+    padding:20px;
+    border:2px red solid;
+    margin: 20px;
+    border-radius: 30px;
+}
+p {
+    color:greenyellow;
+    font-weight: 800;
+    font-family: "Montserrat";
+
+}
