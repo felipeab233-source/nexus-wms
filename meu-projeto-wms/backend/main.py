@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import List
 import models, schemas
 from database import engine, get_db
+from sqlalchemy import func
+from datetime import date
 
 # --- INICIALIZAÇÃO DO BANCO ---
 print("--- DEBUG: Verificando e criando tabelas no MySQL... ---")
@@ -32,29 +34,44 @@ def home():
 # --- ROTAS DE PRODUTOS ---
 
 @app.get("/produtos")
-def listar_produtos(db: Session = Depends(get_db)):
-    return db.query(models.Produto).all()
+def listar_produtos(search: str = None, db: Session = Depends(get_db)):
+    query = db.query(models.Produto)
+    if search:
+        # Filtra por nome ou SKU se o parâmetro search for enviado
+        query = query.filter(
+            (models.Produto.nome.contains(search)) | 
+            (models.Produto.sku.contains(search))
+        )
+    return query.all()
 
-@app.post("/produtos", status_code=201)
-def criar_produto(produto: schemas.ProdutoCreate, db: Session = Depends(get_db)):
-    sku_existente = db.query(models.Produto).filter(models.Produto.sku == produto.sku).first()
-    if sku_existente:
-        raise HTTPException(status_code=400, detail="Este SKU já está cadastrado!")
-
-    novo_produto = models.Produto(
-        sku=produto.sku,
-        nome=produto.nome,
-        categoria_id=produto.categoria_id
-    )
-    
+# --- NOVA ROTA PARA O DASHBOARD ---
+@app.get("/api/dashboard/stats")
+def get_dashboard_stats(db: Session = Depends(get_db)):
     try:
-        db.add(novo_produto)
-        db.commit()
-        db.refresh(novo_produto)
-        return novo_produto
+        total_itens = db.query(models.Produto).count()
+        
+        # Soma entradas de hoje
+        entradas_hoje = db.query(func.sum(models.Movimentacao.quantidade))\
+            .filter(
+                models.Movimentacao.tipo == "ENTRADA", 
+                func.date(models.Movimentacao.data_movimentacao) == date.today()
+            ).scalar() or 0
+            
+        # Soma saídas de hoje
+        saidas_hoje = db.query(func.sum(models.Movimentacao.quantidade))\
+            .filter(
+                models.Movimentacao.tipo == "SAIDA", 
+                func.date(models.Movimentacao.data_movimentacao) == date.today()
+            ).scalar() or 0
+
+        return {
+            "total_itens": total_itens,
+            "entradas_dia": int(entradas_hoje),
+            "saidas_dia": int(saidas_hoje),
+            "alertas_estoque": 0 # Você pode implementar lógica de estoque baixo depois
+        }
     except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao salvar: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- ROTAS DE MOVIMENTAÇÃO (ESTOQUE) ---
 

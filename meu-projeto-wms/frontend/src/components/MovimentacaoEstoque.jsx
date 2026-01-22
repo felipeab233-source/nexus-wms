@@ -33,19 +33,19 @@ const MovimentacaoEstoque = () => {
     fetchDados();
   }, []);
 
-  const fetchDados = async () => {
-    try {
-      // Busca produtos e histórico simultaneamente
-      const [resProd, resHist] = await Promise.all([
-        axios.get('http://localhost:8000/produtos'),
-        axios.get('http://localhost:8000/movimentacoes')
-      ]);
-      setProdutos(resProd.data);
-      setHistorico(resHist.data);
-    } catch (err) {
-      console.error("Erro ao carregar dados:", err);
-    }
-  };
+ const fetchDados = async () => {
+  try {
+    console.log("Buscando produtos...");
+    const resProd = await axios.get('http://127.0.0.1:8001/produtos');
+    console.log("Produtos encontrados:", resProd.data); // ISSO VAI APARECER NO F12
+    setProdutos(resProd.data);
+
+    const resHist = await axios.get('http://127.0.0.1:8001/movimentacoes');
+    setHistorico(resHist.data);
+  } catch (err) {
+    console.error("Erro detalhado na busca:", err);
+  }
+};
 
   // --- FUNÇÕES DE AÇÃO ---
   const showStatus = (type, message) => {
@@ -62,7 +62,7 @@ const MovimentacaoEstoque = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:8000/movimentar', {
+      await axios.post('http://localhost:8001/movimentar', {
         ...form,
         produto_id: parseInt(form.produto_id),
         quantidade: parseInt(form.quantidade)
